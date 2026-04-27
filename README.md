@@ -1,107 +1,123 @@
 # JobFlow
 
-JobFlow is a full-stack job application workflow platform that helps you:
+JobFlow is a full-stack job application workflow platform built around one goal: help users find roles, tailor resumes, and execute applications faster with better quality.
 
-- discover jobs from multiple sources
-- score and tailor resumes for each role
-- track your application pipeline
-- use a Chrome extension to auto-fill application forms
+This repository contains:
 
-It includes a FastAPI backend, a React frontend, and a Chrome extension package.
+- a FastAPI backend (`backend/`)
+- a React + Vite frontend (`frontend/`)
+- a Chrome extension for form assist (`Job Filling Chrome Extension/JobFormFiller/`)
 
-## Stack
+## What JobFlow Does
 
-- **Backend:** FastAPI, SQLAlchemy, SQLite (default), Pydantic, JWT auth
-- **Frontend:** React, TypeScript, Vite, Tailwind CSS, Zustand
-- **Automation/Docs:** Playwright, ReportLab PDF generation
-- **Extension:** Chrome Manifest V3 extension for form auto-fill
+- Aggregates jobs (including LinkedIn sync flow) into a local job pipeline
+- Provides match scoring and AI-assisted tailoring for resume/cover letter content
+- Tracks applications and statuses in one dashboard
+- Supports semi-automated apply flows with guardrails and delays
+- Exposes extension APIs so a Chrome extension can fetch matched resume data and assist form filling
+- Supports document templates and admin template management
 
-## Repository Structure
+## Tech Stack
+
+- **Backend:** FastAPI, SQLAlchemy, Pydantic Settings, JWT auth, SQLite (default)
+- **Frontend:** React 18, TypeScript, Vite, Tailwind CSS, Zustand
+- **Automation + AI tooling:** Playwright, ReportLab, OpenAI/Anthropic-compatible integrations
+- **Extension:** Chrome Manifest V3
+
+## Repository Layout
 
 ```text
 JobFlow/
-├── backend/                               # FastAPI API + services + models
+├── backend/
 │   ├── app/
-│   │   ├── routers/                       # Auth, jobs, applications, auto-apply, extension APIs
-│   │   ├── services/                      # Scraping, tailoring, PDF generation, auto-apply logic
-│   │   ├── models/                        # SQLAlchemy models
-│   │   └── schemas/                       # Pydantic schemas
+│   │   ├── config.py                   # Environment-driven app settings
+│   │   ├── main.py                     # FastAPI app + router registration
+│   │   ├── database.py                 # DB bootstrap/init
+│   │   ├── models/                     # SQLAlchemy models
+│   │   ├── routers/                    # API route groups mounted under /api/v1
+│   │   ├── schemas/                    # Pydantic request/response models
+│   │   ├── services/                   # Scraping, matching, tailoring, auto-apply logic
+│   │   └── utils/                      # Security + shared helpers
 │   ├── .env.example
 │   ├── requirements.txt
 │   └── run.py
-├── frontend/                              # React app
+├── frontend/
 │   ├── src/
-│   │   ├── pages/                         # Dashboard, jobs, resume, applications, settings, admin
-│   │   ├── api/                           # API client and endpoints
-│   │   ├── components/
-│   │   └── store/
+│   │   ├── api/                        # HTTP clients and endpoint wrappers
+│   │   ├── components/                 # Reusable UI/features
+│   │   ├── pages/                      # App screens/routes
+│   │   ├── store/                      # Zustand stores
+│   │   └── types/                      # Shared TS types
 │   ├── package.json
 │   └── vite.config.ts
 └── Job Filling Chrome Extension/
-    └── JobFormFiller/                     # Chrome extension source
+    └── JobFormFiller/
+        ├── manifest.json
+        ├── popup.html / popup.js
+        ├── background.js
+        └── content.js
 ```
 
-## Features
+## Core API Modules
 
-- JWT auth with refresh tokens
-- Resume/profile editor
-- Job aggregation and discovery
-- Match scoring (keyword + AI-assisted options)
-- AI resume tailoring and cover letter generation
-- Swipe-style and list-based job interaction
-- Application tracking and status pipeline
-- Auto-apply controls (limits, delays, score threshold)
-- Admin-managed document templates
-- Chrome extension for assisted auto-fill and resume PDF upload support
+All backend routers are mounted under `/api/v1`:
+
+- `/auth` - register, login, token refresh
+- `/users` - profile preferences and API key management
+- `/resumes` - resume CRUD
+- `/jobs` - job listing, swipe feed, sync/reset actions, match endpoint
+- `/applications` - application CRUD, tailor/export, experiments
+- `/auto-apply` - credentials, questionnaires, apply actions, task status
+- `/document-templates` - user template read endpoints
+- `/admin/document-templates` - admin template management
+- `/extension` - extension download, match, resume PDF, guardrails
+
+Interactive docs: `http://localhost:8001/docs`
 
 ## Prerequisites
 
-- **Python:** 3.10+
-- **Node.js:** 18+ (or 20+ recommended)
-- **npm:** comes with Node.js
-- **Chrome:** for the extension workflow
+- Python 3.10+
+- Node.js 18+ (20+ recommended)
+- npm
+- Google Chrome (for extension development/testing)
 
-## Quick Start
+## Local Development Setup
 
-### 1) Backend Setup
+### 1) Backend
 
-From repository root:
+From repo root:
 
 ```bash
 cd backend
 python -m venv venv
 ```
 
-Activate virtualenv:
+Activate virtual environment:
 
-- **Windows (PowerShell):**
-
+- **Windows PowerShell**
 ```powershell
 .\venv\Scripts\Activate.ps1
 ```
 
-- **macOS/Linux:**
-
+- **macOS/Linux**
 ```bash
 source venv/bin/activate
 ```
 
-Install dependencies:
+Install backend dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Create environment file:
+Create local environment file:
 
-- **Windows (PowerShell):**
-
+- **Windows PowerShell**
 ```powershell
 Copy-Item .env.example .env
 ```
 
-- **macOS/Linux:**
-
+- **macOS/Linux**
 ```bash
 cp .env.example .env
 ```
@@ -112,15 +128,21 @@ Run backend:
 python run.py
 ```
 
-Backend endpoints:
+Backend default endpoints:
 
 - API root: `http://localhost:8001/`
-- Swagger docs: `http://localhost:8001/docs`
-- OpenAPI JSON: `http://localhost:8001/openapi.json`
+- Health: `http://localhost:8001/health`
+- OpenAPI docs: `http://localhost:8001/docs`
 
-### 2) Frontend Setup
+Note: `backend/run.py` currently runs with `reload=False`. For live reload in development, run uvicorn directly:
 
-In a new terminal:
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+```
+
+### 2) Frontend
+
+In a second terminal:
 
 ```bash
 cd frontend
@@ -128,86 +150,53 @@ npm install
 npm run dev
 ```
 
-Frontend runs on: `http://localhost:5173`
+Frontend URL: `http://localhost:5173`
 
-The Vite dev server proxies `/api/*` to `http://localhost:8001`, so frontend API calls work locally without extra env setup.
+The Vite dev server proxies `/api/*` requests to `http://localhost:8001`.
 
-## Configuration
+## Environment Configuration
 
-Backend config lives in `backend/.env`. Start from `backend/.env.example`.
+Primary backend configuration is in `backend/.env` (start from `.env.example`).
 
-| Variable | Required | Description |
+| Variable | Required | Purpose |
 |---|---|---|
-| `APP_NAME` | No | Service name shown in API metadata |
-| `DEBUG` | No | Enables verbose server error payloads |
-| `SECRET_KEY` | Yes | App secret for security-sensitive operations |
+| `APP_NAME` | No | FastAPI service title |
+| `DEBUG` | No | Shows detailed 500 traces in API responses when true |
+| `SECRET_KEY` | Yes | App-level cryptographic secret |
 | `JWT_SECRET` | Yes | JWT signing secret |
-| `DATABASE_URL` | No | DB connection string (`sqlite:///./jobflow.db` default) |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | No | Access token lifetime |
-| `REFRESH_TOKEN_EXPIRE_DAYS` | No | Refresh token lifetime |
-| `REDIS_URL` | Optional | External cache backend (falls back if unset) |
-| `ENCRYPTION_KEY` | Optional | 32-byte base64 key for encrypting stored API keys |
-| `RAPIDAPI_KEY` | Optional | Required only if using RapidAPI LinkedIn source |
-| `RAPIDAPI_HOST` | No | RapidAPI host |
-| `RAPIDAPI_LINKEDIN_PATH` | No | RapidAPI path |
+| `DATABASE_URL` | No | Database URL (`sqlite:///./jobflow.db` by default) |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | No | Access token expiration |
+| `REFRESH_TOKEN_EXPIRE_DAYS` | No | Refresh token expiration |
+| `REDIS_URL` | Optional | External cache backend |
+| `ENCRYPTION_KEY` | Optional | Key for stored provider/API key encryption |
+| `RAPIDAPI_KEY` | Optional | Needed for RapidAPI-based LinkedIn ingestion |
+| `RAPIDAPI_HOST` | No | RapidAPI host override |
+| `RAPIDAPI_LINKEDIN_PATH` | No | RapidAPI endpoint path |
 | `JOB_REFRESH_INTERVAL_HOURS` | No | Job refresh cadence |
-| `MAX_APPLICATIONS_PER_DAY` | No | Auto-apply daily limit |
-| `MIN_DELAY_SECONDS` | No | Minimum auto-apply delay |
-| `MAX_DELAY_SECONDS` | No | Maximum auto-apply delay |
-| `CORS_ORIGINS` | No | Comma-separated allowed frontend origins |
-| `ADMIN_EMAILS` | Optional | Comma-separated emails granted admin access |
+| `MAX_APPLICATIONS_PER_DAY` | No | Auto-apply rate limit |
+| `MIN_DELAY_SECONDS` | No | Auto-apply minimum delay |
+| `MAX_DELAY_SECONDS` | No | Auto-apply maximum delay |
+| `CORS_ORIGINS` | No | Comma-separated allowed origins |
+| `ADMIN_EMAILS` | Optional | Comma-separated admin bootstrap emails |
 
-## Running in Development
+## Chrome Extension Setup
 
-Run backend and frontend concurrently:
+Extension path: `Job Filling Chrome Extension/JobFormFiller`
 
-1. Start backend on `:8001`
-2. Start frontend on `:5173`
-3. Open `http://localhost:5173`
-4. Register/login and begin using dashboard, jobs, resume, and applications flows
-
-## Chrome Extension (JobFormFiller)
-
-The extension source is in:
-
-- `Job Filling Chrome Extension/JobFormFiller`
-
-### Install Unpacked Extension
+Load unpacked extension:
 
 1. Open `chrome://extensions`
-2. Enable **Developer mode**
+2. Turn on **Developer mode**
 3. Click **Load unpacked**
-4. Select `Job Filling Chrome Extension/JobFormFiller`
+4. Select the `JobFormFiller` folder
 
-### Extension Requirements
+Expected local permissions/hosts are defined in `manifest.json`, including `http://localhost:8001/*`.
 
-- Backend running at `http://localhost:8001`
-- User signed in through extension popup
-- A tailored draft already created for the target job URL
+The backend also exposes a packaged download endpoint:
 
-### Download Zip Endpoint
+- `GET /api/v1/extension/download`
 
-Backend also exposes:
-
-- `GET /api/v1/extension/download`  
-  Returns a zip file of the extension package.
-
-## API Surface (High-Level)
-
-Routers are mounted under `/api/v1` and include:
-
-- `auth` (register/login/refresh)
-- `users` (profile and account endpoints)
-- `resumes` (resume/profile data)
-- `jobs` (job ingestion/search/matching)
-- `applications` (application pipeline)
-- `auto_apply` (automation workflows)
-- `document_templates` and `admin_document_templates`
-- `extension` (matching, resume PDF, extension download)
-
-Explore full request/response schemas at `http://localhost:8001/docs`.
-
-## Build for Production
+## Build Commands
 
 Frontend production build:
 
@@ -222,51 +211,37 @@ Preview frontend build:
 npm run preview
 ```
 
-Backend production hardening checklist:
-
-- set strong `SECRET_KEY` and `JWT_SECRET`
-- set `DEBUG=false`
-- move from SQLite to managed Postgres
-- configure reverse proxy and HTTPS
-- configure persistent cache if needed (`REDIS_URL`)
-
 ## Troubleshooting
 
-- **Frontend can’t reach API**
-  - confirm backend is running on `http://localhost:8001`
-  - confirm frontend is running via Vite (`npm run dev`)
-- **401 errors after login**
-  - clear local storage and log in again
-  - verify `JWT_SECRET` consistency
-- **Extension says no match found**
-  - tailor and save a resume draft for that exact job first
-  - confirm you are logged into the extension
+- **Frontend cannot reach API**
+  - Ensure backend is running on `http://localhost:8001`
+  - Ensure frontend runs with `npm run dev` on `http://localhost:5173`
+- **Auth/token issues**
+  - Re-login and verify `JWT_SECRET` consistency
+  - If needed, clear browser local storage/session data
+- **Extension match not found**
+  - Confirm the job has a saved tailored draft
+  - Confirm extension popup session is authenticated
 - **CORS errors**
-  - ensure `CORS_ORIGINS` includes `http://localhost:5173`
-- **PDF generation issues**
-  - ensure `reportlab` is installed in backend virtualenv
+  - Add frontend URL to `CORS_ORIGINS` in `backend/.env`
+- **PDF export/generation failures**
+  - Verify backend dependencies installed from `requirements.txt` (includes `reportlab`)
 
 ## Security Notes
 
-- Do not commit `backend/.env`
-- Use long, random secrets in production
-- Rotate API keys and JWT secrets when compromised
-- Review extension permissions before publishing/distributing
+- Never commit `backend/.env`
+- Use strong random `SECRET_KEY` and `JWT_SECRET` in non-local environments
+- Rotate keys if leaked
+- Review extension permissions before sharing or publishing
 
-## Community and Collaboration
+## Contributing and Governance
 
 - Contribution guide: `CONTRIBUTING.md`
 - Security policy: `SECURITY.md`
 - Code of conduct: `CODE_OF_CONDUCT.md`
-- PR template: `.github/PULL_REQUEST_TEMPLATE.md`
+- Pull request template: `.github/PULL_REQUEST_TEMPLATE.md`
 - Issue templates: `.github/ISSUE_TEMPLATE/`
-
-## Current Limitations
-
-- No CI/CD or deployment manifests included yet
-- Default database is local SQLite
-- No formal test suite documented in this repository snapshot
 
 ## License
 
-This project is licensed under the MIT License. See `LICENSE`.
+MIT License. See `LICENSE`.

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JobFlow Auto-Fill</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <span class="logo-icon">⚡</span>
+      <span class="logo-text">JobFlow</span>
+    </div>
+    <button id="settingsBtn" class="icon-btn" title="Settings">⚙️</button>
+  </header>
+
+  <!-- Loading -->
+  <div id="viewLoading" class="view">
+    <div class="spinner"></div>
+    <p class="muted">Checking…</p>
+  </div>
+
+  <!-- Login -->
+  <div id="viewLogin" class="view hidden">
+    <p class="tagline">Sign in to fill applications automatically</p>
+    <form id="loginForm">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com" required />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" required />
+      </div>
+      <div id="loginError" class="error hidden"></div>
+      <button type="submit" id="loginBtn" class="btn btn-primary">Sign In</button>
+    </form>
+  </div>
+
+  <!-- Match found -->
+  <div id="viewMatch" class="view hidden">
+    <div class="match-card">
+      <div class="match-badge">Match found</div>
+      <div class="match-title" id="matchTitle">Software Engineer</div>
+      <div class="match-company" id="matchCompany">Acme Corp</div>
+      <div class="match-time" id="matchTime"></div>
+    </div>
+
+    <div id="applyDestination" class="apply-destination hidden">
+      <p class="apply-destination-hint" id="applyDestinationHint"></p>
+      <button type="button" id="openApplyDestinationBtn" class="btn btn-outline btn-sm">
+        Open apply page
+      </button>
+    </div>
+
+    <div class="cover-toggle">
+      <label class="toggle-label">
+        <input type="checkbox" id="includeCoverLetter" checked />
+        Include cover letter
+      </label>
+      <label class="toggle-label">
+        <input type="checkbox" id="autoNavigate" checked />
+        Auto-click Next/Continue
+      </label>
+    </div>
+
+    <button id="fillBtn" class="btn btn-primary btn-fill">
+      ⚡ Auto-Fill Application
+    </button>
+  </div>
+
+  <!-- Filling in progress -->
+  <div id="viewFilling" class="view hidden">
+    <div class="progress-header">
+      <span class="progress-label" id="progressLabel">Filling form…</span>
+      <button id="pauseBtn" class="btn btn-sm btn-ghost">Pause</button>
+    </div>
+    <div class="progress-track">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="step-info" id="stepInfo">Step 1</div>
+    <div class="field-count" id="fieldCount"></div>
+
+    <!-- Submit confirmation -->
+    <div id="submitSection" class="hidden">
+      <p class="submit-prompt">All pages filled. Ready to submit?</p>
+      <button id="submitBtn" class="btn btn-primary">Submit Application</button>
+      <button id="reviewBtn" class="btn btn-ghost btn-sm">Review first</button>
+    </div>
+  </div>
+
+  <!-- Done -->
+  <div id="viewDone" class="view hidden">
+    <div class="done-icon">✅</div>
+    <p class="done-title">Application submitted!</p>
+    <p class="done-sub" id="doneJobTitle"></p>
+    <button id="doneCloseBtn" class="btn btn-ghost btn-sm">Close</button>
+  </div>
+
+  <!-- No match -->
+  <div id="viewNoMatch" class="view hidden">
+    <div class="nomatch-icon">🔍</div>
+    <p class="nomatch-title">No tailored resume found</p>
+    <p class="nomatch-sub">
+      Go to JobFlow, find this job, and click <strong>Tailor Resume</strong> first.
+    </p>
+    <button id="openJobFlowBtn" class="btn btn-outline">Open JobFlow</button>
+  </div>
+
+  <!-- Settings panel -->
+  <div id="viewSettings" class="view hidden">
+    <h3 class="settings-title">Settings</h3>
+    <div class="field">
+      <label>Backend URL</label>
+      <input type="url" id="settingsApiBase" placeholder="http://localhost:8001/api/v1" />
+    </div>
+    <label class="toggle-label">
+      <input type="checkbox" id="settingsHighlight" checked />
+      Highlight filled fields
+    </label>
+    <label class="toggle-label">
+      <input type="checkbox" id="settingsAutoSubmit" />
+      Auto-submit (no confirmation)
+    </label>
+    <div class="settings-actions">
+      <button id="saveSettingsBtn" class="btn btn-primary btn-sm">Save</button>
+      <button id="cancelSettingsBtn" class="btn btn-ghost btn-sm">Cancel</button>
+      <button id="logoutBtn" class="btn btn-danger btn-sm">Sign Out</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

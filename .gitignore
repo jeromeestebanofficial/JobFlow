@@ -1,0 +1,67 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Virtual environments
+.venv/
+venv/
+backend/venv/
+ENV/
+env/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+backend/.env
+frontend/.env
+
+# Databases / runtime state
+*.db
+*.sqlite
+*.sqlite3
+backend/sessions/
+
+# Node
+node_modules/
+frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build artifacts
+dist/
+build/
+frontend/dist/
+coverage/
+
+# Generated documents
+generated_resumes/
+*.pdf
+
+# Logs
+*.log
+logs/
+
+# Misc
+tmp/
+temp/
